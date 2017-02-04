@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+root 'static_pages#show'
+get 'firebase_info' => 'static_pages#firebase_info'
+get 'length' => 'static_pages#get_length'
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

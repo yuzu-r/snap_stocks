@@ -23,6 +23,7 @@ gem 'react-rails'
 
 gem 'quandl', '~>1.0.0'
 gem 'mime-types', '2.99'
+gem 'firebase'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
