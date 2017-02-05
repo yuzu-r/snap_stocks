@@ -1,0 +1,24 @@
+body{
+  font-family: 'Lato', sans-serif;
+}
+
+.axis text {
+  font-size: 10px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+path { 
+    stroke-width: 2;
+    fill: none;
+}
+
+#chart{
+  height: 480px;
+  width: 480px;
+}
