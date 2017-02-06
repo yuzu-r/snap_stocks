@@ -3,7 +3,9 @@ var Smoke = React.createClass({
     return (
       {
         stockList: [],
-        stock: ''
+        stock: '',
+        stockData: [{name: 'black', color: 'black',data: [['2016-01-01', 1], ['2016-01-02', 2], ['2016-01-03',3]]},
+          {name: 'green',color: 'green',data: [['2016-01-01', 4], ['2016-01-02', 12], ['2016-01-03',6]]}]
       }
     )
   },
@@ -26,17 +28,16 @@ var Smoke = React.createClass({
               url: '/length',
               dataType: 'json',
               data: {ticker: stock},
-              success: function(response){
-                //console.log('setting length to fb', response);
+              success: function(response){               
               },
               error: function(response){
                 console.log('errro setting legnth to fb', response.responseText);
               }
             })
           }          
-          self.setState({stockList: runningStockList});
-          self.drawChart();
-        })
+          self.setState({stockList: runningStockList});         
+        });
+        self.drawChart();
       }
     })    
   },
@@ -44,18 +45,22 @@ var Smoke = React.createClass({
     firebase.off();
   },
   drawChart: function(){
-    console.log('in drawChart');
     var maxHeight = 450, maxWidth = 480;
     
     var margin = {top: 30, right: 20, bottom: 30, left: 50},
       width = maxWidth - margin.left - margin.right,
-      height = maxHeight - margin.top - margin.bottom;
+      height = maxHeight - margin.top - margin.bottom;  
     
-    var data=[{name: 'black', color: 'black',data: [['2016-01-01', 5], ['2016-01-02', 2], ['2016-01-03',3]]},
-          {name: 'green',color: 'green',data: [['2016-01-01', 4], ['2016-01-02', 12], ['2016-01-03',6]]}];
-
     var parseDate = d3.timeParse("%Y-%m-%d");
-    
+
+    var data = this.state.stockData;
+    data.forEach(function(datarow) {
+      for (let i = 0; i < datarow.data.length; i++) {
+        datarow.data[i][0] = parseDate(datarow.data[i][0]);
+        datarow.data[i][1] = +datarow.data[i][1];
+      }
+    });
+
     var minDate = '2016-01-01';  
     var maxDate = '2016-01-03';
 
@@ -72,44 +77,60 @@ var Smoke = React.createClass({
       }
       return currentMax;
     };
-    var xRange = d3.scaleTime()
+    var x = d3.scaleTime()
               .range([0,width])
               .domain([parseDate(minDate), parseDate(maxDate)])
-    var yRange = d3.scaleLinear()
+    var y = d3.scaleLinear()
                 .range([height, 0])
                 .domain([0,getYDomainMax(data)]); 
 
     var xAxis = d3.axisBottom()
-      .scale(xRange)
+      .scale(x)
+      .tickFormat(d3.timeFormat("%m/%d"))
+      .ticks(d3.timeDay);
 
-    var yAxis = d3.axisLeft()
-      .scale(yRange)
+      var yAxis = d3.axisLeft()
+        .scale(y)
 
-    var line = d3.line()
-      .x(function(d) { return xRange(parseDate(d[0])); })
-      .y(function(d) { return yRange(d[1]); });  
-     
-    var svg = d3.select("#chart")
-      .append("svg")
-          .attr("width", width + margin.left + margin.right)
-          .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+      var line = d3.line()
+        .x(function(d) { return x(d[0]); })
+        .y(function(d) { return y(d[1]); });  
     
-    svg.selectAll('path')
-      .data(data)
-      .enter().append('path')
-      .attr('d',function(d){ return line(d.data);})
-      .attr('stroke', function(d) { return d.color; });
+      var svg = d3.select("#chart")
+        .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       
-    svg.append("g")         // Add the X Axis
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(xAxis);
+      svg.selectAll('path')
+        .data(data)
+        .enter().append('path')
+        .attr('d',function(d){ return line(d.data);})
+        .attr('stroke', function(d) { return d.color; });
 
-    svg.append("g")         // Add the Y Axis
-        .attr("class", "y axis")
-        .call(yAxis);
+      data.forEach (function(dataset, index){
+        svg.selectAll('spot')
+          .data(dataset.data)
+          .enter().append("circle")
+          .attr('r', 3)
+          .attr('fill', function(d){return dataset.color;})
+          .attr('cx', function(d){
+            return x(d[0])
+          })
+          .attr('cy', function(d){ 
+            return y(d[1])
+          })
+      })
+  
+      svg.append("g")         // Add the X Axis
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+
+      svg.append("g")         // Add the Y Axis
+          .attr("class", "y axis")
+          .call(yAxis);
   },
   onSubmitStock: function(e){
     e.preventDefault();
@@ -131,7 +152,7 @@ var Smoke = React.createClass({
   },  
   render(){
     return (
-      <div>
+      <div className='col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2'>
         <p>HI from React!</p>
         <StockContainer stockList={this.state.stockList}
                         stock={this.state.stock} 
