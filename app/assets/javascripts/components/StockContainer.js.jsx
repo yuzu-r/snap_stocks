@@ -5,7 +5,7 @@ var StockContainer = React.createClass({
         <div className='input-group'>
           <input placeholder='Enter a stock symbol' 
                   value={this.props.stock}
-                  onChange={this.props.handeUpdateStock}
+                  onChange={this.props.handleUpdateStock}
                   className='form-control'
                   type='text'>
           </input>

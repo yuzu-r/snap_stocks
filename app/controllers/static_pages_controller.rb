@@ -9,7 +9,7 @@ class StaticPagesController < ApplicationController
     #@result = Net::HTTP.get(URI.parse(url))
     #puts "#{@result}"
     #@stocks = JSON.parse(FB.get('/wip/').response.body).values  # => { 'name' => "-INOQPH-aV_psbk3ZXEX" }
-    @stocks = JSON.parse(FB.get('/wip/').response.body).keys 
+    @stocks = JSON.parse(FB.get('/stocks/').response.body).keys 
     puts "show controller: #{@stocks}"
   end
   def firebase_info
@@ -21,11 +21,9 @@ class StaticPagesController < ApplicationController
                     }
                   }    
   end
-  def get_length
-    ticker = params[:ticker]
-    s = Stock.new(ticker)
-    s.length
-    render json: {:success => "success", :status_code => "200"}
-  end
 
+  def fetch_prices
+    stocks_data = Stock.get_data
+    render json: {:success => "success", :status_code => "200", :stock_data => stocks_data}
+  end
 end

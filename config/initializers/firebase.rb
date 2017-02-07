@@ -1,2 +1,2 @@
-STOCKS_URI = ENV["firebase_database_url"] + "/wip/"
+STOCKS_URI = ENV["firebase_database_url"] + "/stocks/"
 FB = Firebase::Client.new(STOCKS_URI)

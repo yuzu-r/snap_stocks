@@ -4,8 +4,7 @@ var Smoke = React.createClass({
       {
         stockList: [],
         stock: '',
-        stockData: [{name: 'black', color: 'black',data: [['2016-01-01', 1], ['2016-01-02', 2], ['2016-01-03',3]]},
-          {name: 'green',color: 'green',data: [['2016-01-01', 4], ['2016-01-02', 12], ['2016-01-03',6]]}]
+        rubyData: []
       }
     )
   },
@@ -19,25 +18,25 @@ var Smoke = React.createClass({
         firebase.initializeApp(response.config);
         var stockList = [];
         firebase.database().ref().on('value', function(snapshot){
-          var stocksObject = snapshot.val().wip;
+          var stocksObject = snapshot.val().stocks;
           var runningStockList = [];
           for (var stock in stocksObject) {
             runningStockList.push(stock);
-            $.ajax({
-              type: 'GET',
-              url: '/length',
-              dataType: 'json',
-              data: {ticker: stock},
-              success: function(response){               
-              },
-              error: function(response){
-                console.log('errro setting legnth to fb', response.responseText);
-              }
-            })
-          }          
+          } 
+          $.ajax({
+            type: 'GET',
+            url: '/prices',
+            dataType: 'json',
+            success: function(response){
+              console.log('success!', response);
+              self.setState({rubyData: response.stock_data}, self.drawChart);
+            },
+            error: function(response){
+              console.log('failed to get prices', response.responseText);
+            }
+          })         
           self.setState({stockList: runningStockList});         
-        });
-        self.drawChart();
+        });       
       }
     })    
   },
@@ -53,7 +52,8 @@ var Smoke = React.createClass({
     
     var parseDate = d3.timeParse("%Y-%m-%d");
 
-    var data = this.state.stockData;
+    var data = this.state.rubyData;
+
     data.forEach(function(datarow) {
       for (let i = 0; i < datarow.data.length; i++) {
         datarow.data[i][0] = parseDate(datarow.data[i][0]);
@@ -89,48 +89,52 @@ var Smoke = React.createClass({
       .tickFormat(d3.timeFormat("%m/%d"))
       .ticks(d3.timeDay);
 
-      var yAxis = d3.axisLeft()
-        .scale(y)
+    var yAxis = d3.axisLeft()
+      .scale(y)
 
-      var line = d3.line()
-        .x(function(d) { return x(d[0]); })
-        .y(function(d) { return y(d[1]); });  
+    var line = d3.line()
+      .x(function(d) { return x(d[0]); })
+      .y(function(d) { return y(d[1]); });  
     
-      var svg = d3.select("#chart")
-        .append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    d3.select("#prices_svg").remove();
+    var svg = d3.select("#chart")
+      .append("svg")
+          .attr("id", "prices_svg")
+          .attr("width", width + margin.left + margin.right)
+          .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+          .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
       
-      svg.selectAll('path')
-        .data(data)
-        .enter().append('path')
-        .attr('d',function(d){ return line(d.data);})
-        .attr('stroke', function(d) { return d.color; });
+    svg.selectAll('path')
+      .data(data)
+      .enter().append('path')
+      .attr('d',function(d){ return line(d.data);})
+      .attr('stroke', function(d) { return d.color; });
 
-      data.forEach (function(dataset, index){
-        svg.selectAll('spot')
-          .data(dataset.data)
-          .enter().append("circle")
-          .attr('r', 3)
-          .attr('fill', function(d){return dataset.color;})
-          .attr('cx', function(d){
-            return x(d[0])
-          })
-          .attr('cy', function(d){ 
-            return y(d[1])
-          })
-      })
+    data.forEach (function(dataset, index){
+      svg.selectAll('spot')
+        .data(dataset.data)
+        .enter().append("circle")
+        .attr('r', 3)
+        .attr('fill', function(d){return dataset.color;})
+        .attr('cx', function(d){
+          return x(d[0])
+        })
+        .attr('cy', function(d){ 
+          return y(d[1])
+        })
+    })
   
-      svg.append("g")         // Add the X Axis
-          .attr("class", "x axis")
-          .attr("transform", "translate(0," + height + ")")
-          .call(xAxis);
+    svg.append("g")         // Add the X Axis
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
 
-      svg.append("g")         // Add the Y Axis
-          .attr("class", "y axis")
-          .call(yAxis);
+    svg.append("g")         // Add the Y Axis
+        .attr("class", "y axis")
+        .call(yAxis);
+
+    return true;
   },
   onSubmitStock: function(e){
     e.preventDefault();
@@ -140,15 +144,15 @@ var Smoke = React.createClass({
         stock: ''
       }
     );
-    var stockRef = firebase.database().ref("wip").child(stock);
-    stockRef.update({greeting: 'hi'});
+    var stockRef = firebase.database().ref("stocks").child(stock);
+    stockRef.update({ticker: stock});
   },  
   onUpdateStock: function(e){
     this.setState({stock: e.target.value});
   }, 
   removeStock: function(stock){
     //console.log('removing', stock);
-    firebase.database().ref('wip').child(stock).remove();
+    firebase.database().ref('stocks').child(stock).remove();
   },  
   render(){
     return (
