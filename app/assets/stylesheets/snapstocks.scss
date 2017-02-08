@@ -22,3 +22,11 @@ path {
   height: 480px;
   width: 480px;
 }
+
+.tip{
+  white-space: pre-wrap; /* to get linebreak in div */
+  font-size: 12px;
+  position: absolute;
+  z-index: 10;
+  color: white;
+}

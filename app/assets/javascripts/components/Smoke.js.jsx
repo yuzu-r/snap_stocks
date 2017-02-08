@@ -29,7 +29,15 @@ var Smoke = React.createClass({
             dataType: 'json',
             success: function(response){
               console.log('success!', response);
-              self.setState({rubyData: response.stock_data}, self.drawChart);
+                function getColor(index) {
+                  var colorScale = d3.schemeCategory10; 
+                  return colorScale[index % colorScale.length];
+                }
+                response.stock_data.forEach(function(datarow, index) {
+                  datarow["color"] = getColor(index);
+                });
+
+                self.setState({rubyData: response.stock_data}, self.drawChart);
             },
             error: function(response){
               console.log('failed to get prices', response.responseText);
@@ -44,17 +52,22 @@ var Smoke = React.createClass({
     firebase.off();
   },
   drawChart: function(){
-    var maxHeight = 450, maxWidth = 480;
+    var maxHeight = 450, maxWidth = 700;
     
-    var margin = {top: 30, right: 20, bottom: 30, left: 50},
+    var margin = {top: 30, right: 50, bottom: 40, left: 50},
       width = maxWidth - margin.left - margin.right,
       height = maxHeight - margin.top - margin.bottom;  
-    
+
+    var tooltip = d3.select('body')
+        .append('div')
+        .attr('class', 'tip')
+        .style('visibility', 'hidden');
+  
     var parseDate = d3.timeParse("%Y-%m-%d");
 
     var data = this.state.rubyData;
 
-    data.forEach(function(datarow) {
+    data.forEach(function(datarow, index) {
       for (let i = 0; i < datarow.data.length; i++) {
         datarow.data[i][0] = parseDate(datarow.data[i][0]);
         datarow.data[i][1] = +datarow.data[i][1];
@@ -109,7 +122,16 @@ var Smoke = React.createClass({
       .data(data)
       .enter().append('path')
       .attr('d',function(d){ return line(d.data);})
-      .attr('stroke', function(d) { return d.color; });
+      .attr('stroke', function(d) { return d.color; })
+      .on('mouseover', function(d){     
+          d3.select(this).style("stroke", "black");
+        })
+    .on('mousemove', function(){
+        d3.select(this).style("stroke", "black");
+      })
+    .on('mouseout', function(){
+        d3.select(this).style("stroke",function(d){return d.color});
+      });
 
     data.forEach (function(dataset, index){
       svg.selectAll('spot')
@@ -123,17 +145,52 @@ var Smoke = React.createClass({
         .attr('cy', function(d){ 
           return y(d[1])
         })
-    })
+        .on('mouseover', function(d){     
+            var tipText = '$' + d[1];
+            var dateFormat = d3.timeFormat('%m/%d/%y');
+            tipText += '\n ' + dateFormat(d[0]);
+            tooltip.style('background-color',function(d){return dataset.color;});
+            tooltip.text(tipText); 
+              return tooltip.style('visibility', 'visible');
+            })
+        .on('mousemove', function(){
+            var styleTop = (d3.event.pageY-10)+'px';
+            var styleLeft = (d3.event.pageX+10)+'px';
+            return tooltip.style('top', styleTop).style('left',styleLeft);
+          })
+        .on('mouseout', function(){
+            return tooltip.style('visibility', 'hidden');
+          });
+
+      svg.selectAll('label')
+        .data(dataset.data[2])
+        .enter().append("text")
+        .attr("x", width+5)
+        .attr("y", function(d){return y(d) + 3})
+        .text(function(d){return dataset.ticker});
+    });
   
     svg.append("g")         // Add the X Axis
         .attr("class", "x axis")
         .attr("transform", "translate(0," + height + ")")
         .call(xAxis);
 
+    svg.append("text")
+        .attr("x", width/2)
+        .attr("y", height + margin.bottom)
+        .style("text-anchor", "middle")
+        .text("Date");
+
     svg.append("g")         // Add the Y Axis
         .attr("class", "y axis")
         .call(yAxis);
 
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", 0 - (height/2))
+        .attr("y", 0 - margin.left/2)
+        .style("text-anchor","middle")
+        .text("Closing Price, $")
     return true;
   },
   onSubmitStock: function(e){
