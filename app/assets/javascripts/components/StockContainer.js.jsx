@@ -17,8 +17,7 @@ var StockContainer = React.createClass({
             </button>
           </div>
         </div>
-        <p>This will be container for adding and displaying stocks.</p>
-        <StockDisplay stocks={this.props.stockList} removeStock={this.props.removeStock} />
+        <StockDisplay stockData={this.props.stockData} removeStock={this.props.removeStock} />
       </div>
     )
   }

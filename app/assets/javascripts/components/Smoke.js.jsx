@@ -54,7 +54,7 @@ var Smoke = React.createClass({
   drawChart: function(){
     var maxHeight = 450, maxWidth = 700;
     
-    var margin = {top: 30, right: 50, bottom: 40, left: 50},
+    var margin = {top: 40, right: 50, bottom: 40, left: 50},
       width = maxWidth - margin.left - margin.right,
       height = maxHeight - margin.top - margin.bottom;  
 
@@ -145,10 +145,11 @@ var Smoke = React.createClass({
         .attr('cy', function(d){ 
           return y(d[1])
         })
-        .on('mouseover', function(d){     
-            var tipText = '$' + d[1];
+        .on('mouseover', function(d){
+            var tipText = dataset.ticker;     
+            tipText += '\n' + '$' + d[1];
             var dateFormat = d3.timeFormat('%m/%d/%y');
-            tipText += '\n ' + dateFormat(d[0]);
+            tipText += '\n' + dateFormat(d[0]);
             tooltip.style('background-color',function(d){return dataset.color;});
             tooltip.text(tipText); 
               return tooltip.style('visibility', 'visible');
@@ -161,13 +162,6 @@ var Smoke = React.createClass({
         .on('mouseout', function(){
             return tooltip.style('visibility', 'hidden');
           });
-
-      svg.selectAll('label')
-        .data(dataset.data[2])
-        .enter().append("text")
-        .attr("x", width+5)
-        .attr("y", function(d){return y(d) + 3})
-        .text(function(d){return dataset.ticker});
     });
   
     svg.append("g")         // Add the X Axis
@@ -191,6 +185,13 @@ var Smoke = React.createClass({
         .attr("y", 0 - margin.left/2)
         .style("text-anchor","middle")
         .text("Closing Price, $")
+
+    svg.append("text")
+        .attr("x", (width/2))
+        .attr("y", 0 - (margin.top / 2))
+        .attr("text-anchor", "middle")
+        .text("Historical Stock Prices, a dynamic graph")
+
     return true;
   },
   onSubmitStock: function(e){
@@ -216,6 +217,7 @@ var Smoke = React.createClass({
       <div className='col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2'>
         <p>HI from React!</p>
         <StockContainer stockList={this.state.stockList}
+                        stockData={this.state.rubyData}
                         stock={this.state.stock} 
                         removeStock={this.removeStock} 
                         handleSubmitStock={this.onSubmitStock} 

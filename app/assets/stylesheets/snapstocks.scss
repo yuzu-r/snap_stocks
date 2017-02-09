@@ -2,6 +2,27 @@ body{
   font-family: 'Lato', sans-serif;
 }
 
+.stock-list{
+  padding-top: 20px;
+}
+
+.stock-label{
+  display: inline-block;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.stock-button{
+  padding-left: 5px;
+}
+
+.stock-button:hover{
+  color: black;
+}
+
 .axis text {
   font-size: 10px;
 }
@@ -29,4 +50,6 @@ path {
   position: absolute;
   z-index: 10;
   color: white;
+  padding: 5px;
+  border-radius: 5px;  
 }
