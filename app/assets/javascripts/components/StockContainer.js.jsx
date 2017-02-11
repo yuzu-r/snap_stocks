@@ -2,7 +2,7 @@ var StockContainer = React.createClass({
   render: function(){
     return (
       <div>
-        <div className="user-input">
+        <div className='user-input'>
           <div className='ticker'>
             <div className='input-group'>
               <input placeholder='TSLA' 
@@ -15,12 +15,14 @@ var StockContainer = React.createClass({
                 <button 
                     className='btn btn-success'
                     onClick={this.props.handleSubmitStock}
+                    disabled={this.props.invalidEntry}
                     >
                     Add
                 </button>
               </div>
             </div>                    
           </div> 
+          <div className='warning adj-inline'>{this.props.warningMsg}</div>
           <div className='time'>       
             <label className="radio-inline adj-inline">
               <input type="radio" 

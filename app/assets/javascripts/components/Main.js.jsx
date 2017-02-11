@@ -5,7 +5,9 @@ var Main = React.createClass({
         stockList: [],
         stock: '',
         rubyData: [],
-        selectedTimePeriod: '30_days'
+        selectedTimePeriod: '30_days',
+        warningMsg: '',
+        invalidEntry: false
       }
     )
   },
@@ -32,16 +34,21 @@ var Main = React.createClass({
             url: '/prices',
             dataType: 'json',
             success: function(response){
-              console.log('success!', response);
+              //console.log('success!', response);
                 function getColor(index) {
                   var colorScale = d3.schemeCategory10; 
                   return colorScale[index % colorScale.length];
                 }
+                var noDataWarning = false;
                 response.stock_data.forEach(function(datarow, index) {
                   datarow["color"] = getColor(index);
+                  if(datarow["data"].length === 0) {
+                    // quandl does not have data for stock
+                    noDataWarning = true;
+                  }
                 });
-
-                self.setState({rubyData: response.stock_data}, self.drawChart);
+                var noDataMsg = noDataWarning ? 'One or more stocks could not be found in Quandl.' : ''
+                self.setState({rubyData: response.stock_data, warningMsg: noDataMsg}, self.drawChart);
             },
             error: function(response){
               console.log('failed to get prices', response.responseText);
@@ -208,19 +215,33 @@ var Main = React.createClass({
     return true;
   },
   onSubmitStock: function(e){
-    console.log('adding',e.target.value)
+    //console.log('adding',e.target.value)
     e.preventDefault();
     var stock = this.state.stock;
-    this.setState(
-      {
-        stock: ''
-      }
-    );
-    var stockRef = firebase.database().ref("stocks").child(stock);
-    stockRef.update({ticker: stock});
+    var existingStocks = this.state.stockList;
+    if (existingStocks.indexOf(stock) === -1) {
+      this.setState(
+        {
+          stock: ''
+        }
+      );
+      var stockRef = firebase.database().ref("stocks").child(stock);
+      stockRef.update({ticker: stock});
+    }
+    else {
+      this.setState(
+        {warningMsg: 'That stock is already being charted.'}
+      );
+    }
   },  
   onUpdateStock: function(e){
-    this.setState({stock: e.target.value});
+    var newStock = e.target.value;
+    var stockList = this.state.stockList;
+    var duplicateFound = stockList.indexOf(newStock) > -1;
+    this.setState({
+                    stock: newStock, 
+                    invalidEntry: duplicateFound
+                  });
   }, 
   removeStock: function(stock){
     //console.log('removing', stock);
@@ -237,8 +258,9 @@ var Main = React.createClass({
                         removeStock={this.removeStock} 
                         handleSubmitStock={this.onSubmitStock} 
                         handleUpdateStock={this.onUpdateStock}
-                        handleTimeChange={this.handleTimeChange}/>
-        
+                        handleTimeChange={this.handleTimeChange}
+                        warningMsg={this.state.warningMsg}
+                        invalidEntry={this.state.invalidEntry}/>
         <div id='chart'></div>
       </div>
     )

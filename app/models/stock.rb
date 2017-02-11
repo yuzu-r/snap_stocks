@@ -14,13 +14,6 @@ class Stock
   end
   
   def quandl
-    #https://www.quandl.com/api/v3/datatables/WIKI/PRICES/metadata.json?api_key=b6kb-Zw_JtEH-hEX76jD
-    #qopts.columns=ticker,date,close
-    #url = 'https://www.quandl.com/api/v3/datatables/WIKI/PRICES.json?date.gte=20160101&date.lt=20160110&ticker=MSFT,FB&qopts.columns=ticker,date,close&api_key=b6kb-Zw_JtEH-hEX76jD'
-    #@result = Net::HTTP.get(URI.parse(url))
-    #puts "#{@result}"
-    #https://www.quandl.com/api/v3/datasets/WIKI/FB.json?api_key=b6kb-Zw_JtEH-hEX76jD
-    #"https://www.quandl.com/api/v3/datasets/WIKI/FB.json?column_index=4&start_date=2014-01-01&end_date=2014-12-31&collapse=monthly&api_key=b6kb-Zw_JtEH-hEX76jD"
     key = ENV["quandl_api_key"]
     api_key = 'api_key=' + key
     column_index = 'column_index=4'
@@ -31,12 +24,11 @@ class Stock
     url = base_url + @ticker + '.json?' + '&' + column_index + '&' + start_date + '&' + end_date + '&' + api_key
     result = Net::HTTP.get(URI.parse(url))
     json_result = JSON.parse(result)
-    quandl_data = json_result['dataset']['data']
-
-=begin
-    quandl data is    
-    [["2016-01-15", 39.77], ["2016-01-14", 40.47], ["2016-01-13", 40.4], etc
-=end
+    if json_result['quandl_error']
+      quandl_data = []
+    else
+      quandl_data = json_result['dataset']['data']
+    end
     return quandl_data
   end
 
@@ -44,8 +36,6 @@ class Stock
     response = JSON.parse(FB.get('/').response.body)
     ticker_list = response["stocks"].keys
     #time_period = response["selectedTimePeriod"]
-    #puts "stock_list: #{ticker_list}"
-    #puts "time period: #{time_period}"
     # write the time period +/- 1 day for a little margin
     today = Time.now
     end_date = (today+1).strftime('%F')

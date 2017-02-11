@@ -1,9 +1,8 @@
 class StaticPagesController < ApplicationController
   def show
-    @greeting = 'hi'
     @stocks = JSON.parse(FB.get('/stocks/').response.body).keys 
-    puts "show controller: #{@stocks}"
   end
+
   def firebase_info
     render json: {:success => "success", :status_code => "200", 
         :config => {:apiKey => ENV["firebase_api_key"], 
