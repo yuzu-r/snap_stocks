@@ -4,7 +4,8 @@ var Smoke = React.createClass({
       {
         stockList: [],
         stock: '',
-        rubyData: []
+        rubyData: [],
+        selectedTimePeriod: '30_days'
       }
     )
   },
@@ -18,11 +19,14 @@ var Smoke = React.createClass({
         firebase.initializeApp(response.config);
         var stockList = [];
         firebase.database().ref().on('value', function(snapshot){
-          var stocksObject = snapshot.val().stocks;
+          var responseVals = snapshot.val();
+          var stocksObject = responseVals.stocks;
+          var startDate = responseVals.start_date;
+          var endDate = responseVals.end_date;
           var runningStockList = [];
           for (var stock in stocksObject) {
             runningStockList.push(stock);
-          } 
+          }
           $.ajax({
             type: 'GET',
             url: '/prices',
@@ -42,8 +46,12 @@ var Smoke = React.createClass({
             error: function(response){
               console.log('failed to get prices', response.responseText);
             }
-          })         
-          self.setState({stockList: runningStockList});         
+          })
+          self.setState(
+            { stockList: runningStockList,
+              startDate: startDate,
+              endDate: endDate
+            });         
         });       
       }
     })    
@@ -51,6 +59,9 @@ var Smoke = React.createClass({
   componentWillUnmount: function(){
     firebase.off();
   },
+  handleTimeChange: function(e){
+    this.setState({selectedTimePeriod: e.target.value});
+  },  
   drawChart: function(){
     var maxHeight = 450, maxWidth = 700;
     
@@ -74,8 +85,9 @@ var Smoke = React.createClass({
       }
     });
 
-    var minDate = '2016-01-01';  
-    var maxDate = '2016-01-03';
+
+    var minDate = this.state.startDate;
+    var maxDate = this.state.endDate;
 
     var getYDomainMax = function(data){
       var currentMax = 0;
@@ -100,7 +112,8 @@ var Smoke = React.createClass({
     var xAxis = d3.axisBottom()
       .scale(x)
       .tickFormat(d3.timeFormat("%m/%d"))
-      .ticks(d3.timeDay);
+      .ticks(8);
+      //.ticks(d3.timeDay);
 
     var yAxis = d3.axisLeft()
       .scale(y)
@@ -195,6 +208,7 @@ var Smoke = React.createClass({
     return true;
   },
   onSubmitStock: function(e){
+    console.log('adding',e.target.value)
     e.preventDefault();
     var stock = this.state.stock;
     this.setState(
@@ -215,13 +229,15 @@ var Smoke = React.createClass({
   render(){
     return (
       <div className='col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2'>
-        <p>HI from React!</p>
+        <h3>Stock Tracker</h3>
         <StockContainer stockList={this.state.stockList}
                         stockData={this.state.rubyData}
                         stock={this.state.stock} 
+                        selectedTimePeriod={this.state.selectedTimePeriod}
                         removeStock={this.removeStock} 
                         handleSubmitStock={this.onSubmitStock} 
-                        handleUpdateStock={this.onUpdateStock}/>
+                        handleUpdateStock={this.onUpdateStock}
+                        handleTimeChange={this.handleTimeChange}/>
         
         <div id='chart'></div>
       </div>

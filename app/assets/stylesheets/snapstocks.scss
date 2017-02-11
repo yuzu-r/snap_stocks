@@ -1,6 +1,24 @@
 body{
   font-family: 'Lato', sans-serif;
 }
+.adj-inline{
+  padding-top:7px;
+}
+
+.user-input {
+  height: 34px;
+  display: flex;
+}
+
+.ticker{
+  min-width: 140px;
+  max-width: 140px;
+}
+.time{
+  flex-grow: 1;
+  padding-left:10px;
+  padding-right:10px;
+}
 
 .stock-list{
   padding-top: 20px;
