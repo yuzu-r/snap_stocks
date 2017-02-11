@@ -111,7 +111,7 @@ var Smoke = React.createClass({
 
     var xAxis = d3.axisBottom()
       .scale(x)
-      .tickFormat(d3.timeFormat("%m/%d"))
+      .tickFormat(d3.timeFormat("%m/%d/%y"))
       .ticks(8);
       //.ticks(d3.timeDay);
 
@@ -195,7 +195,7 @@ var Smoke = React.createClass({
     svg.append("text")
         .attr("transform", "rotate(-90)")
         .attr("x", 0 - (height/2))
-        .attr("y", 0 - margin.left/2)
+        .attr("y", 0 - (margin.left/1.5))
         .style("text-anchor","middle")
         .text("Closing Price, $")
 
@@ -203,7 +203,7 @@ var Smoke = React.createClass({
         .attr("x", (width/2))
         .attr("y", 0 - (margin.top / 2))
         .attr("text-anchor", "middle")
-        .text("Historical Stock Prices, a dynamic graph")
+        .text("90-Day Stock Price History");
 
     return true;
   },
@@ -229,7 +229,7 @@ var Smoke = React.createClass({
   render(){
     return (
       <div className='col-xs-12 col-sm-10 col-sm-offset-1 col-md-8 col-md-offset-2'>
-        <h3>Stock Tracker</h3>
+        <h3>Stock Tracker <small>(source: <a href="https://www.quandl.com/" target="_blank">Quandl</a>)</small></h3>
         <StockContainer stockList={this.state.stockList}
                         stockData={this.state.rubyData}
                         stock={this.state.stock} 
