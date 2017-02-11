@@ -1,4 +1,4 @@
-var Smoke = React.createClass({
+var Main = React.createClass({
   getInitialState: function(){
     return (
       {
