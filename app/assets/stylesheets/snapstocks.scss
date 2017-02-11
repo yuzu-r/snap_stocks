@@ -1,0 +1,74 @@
+body{
+  font-family: 'Lato', sans-serif;
+}
+.adj-inline{
+  padding-top:7px;
+}
+
+.user-input {
+  height: 34px;
+  display: flex;
+}
+
+.ticker{
+  min-width: 140px;
+  max-width: 140px;
+}
+.time{
+  flex-grow: 1;
+  padding-left:10px;
+  padding-right:10px;
+  display: none;
+}
+
+.stock-list{
+  padding-top: 20px;
+}
+
+.stock-label{
+  display: inline-block;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  color: white;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.stock-button{
+  padding-left: 5px;
+}
+
+.stock-button:hover{
+  color: black;
+}
+
+.axis text {
+  font-size: 10px;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+path { 
+    stroke-width: 2;
+    fill: none;
+}
+
+#chart{
+  height: 480px;
+  width: 480px;
+}
+
+.tip{
+  white-space: pre-wrap; /* to get linebreak in div */
+  font-size: 12px;
+  position: absolute;
+  z-index: 10;
+  color: white;
+  padding: 5px;
+  border-radius: 5px;  
+}

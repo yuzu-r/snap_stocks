@@ -1,20 +1,22 @@
 var StockDisplay = React.createClass({
   render: function(){
     var self = this;
-    var stocks = this.props.stocks.map(function(s, index){
+    var stocks = this.props.stockData.map(function(s, index){
+      var divStyle = {backgroundColor: s.color};
           return(
-            <li key={index}>
-              {s}
-              <button onClick={self.props.removeStock.bind(null, s)}>
-                remove me
-              </button>
-            </li>
+            <div key={index} className='stock-label' style={divStyle}>
+              {s.ticker}
+              <span className='stock-button glyphicon glyphicon-trash' 
+                    aria-label="click to delete"
+                    onClick={self.props.removeStock.bind(null, s.ticker)}>
+              </span>
+            </div>
           )
         });
     return (
-      <ul>Current Stock List:
+      <div className='stock-list'>
         {stocks}
-      </ul>
+      </div>
     )
   }
 });
